@@ -1,27 +1,30 @@
-# Import necessary libraries
 import requests
 import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
 
 # Set API endpoint and parameters
-url = 'https://query1.finance.yahoo.com/v8/finance/chart/^GSPC'
+api_key = 'G5VBBZPVHKYBKOX6'  
+symbol = 'SPX'
+function = 'TIME_SERIES_DAILY_ADJUSTED'
 params = {
-    'range': 'max',
-    'interval': '1d'
+    'function': function,
+    'symbol': symbol,
+    'outputsize': 'full',
+    'apikey': api_key
 }
 
 # Make API request
+url = 'https://www.alphavantage.co/query'
 response = requests.get(url, params=params)
 data = response.json()
 
 # Clean data
-df = pd.DataFrame(data['chart']['result'][0]['indicators']['quote'][0])
-df['time'] = pd.to_datetime(data['chart']['result'][0]['timestamp'], unit='s')
-df = df.set_index('time')
-df = df.dropna()
-
-# Calculate daily returns
+df = pd.DataFrame(data['Time Series (Daily)']).T
+df.index = pd.to_datetime(df.index)
+df = df[['1. open', '2. high', '3. low', '4. close']]
+df = df.astype('float')
+df.columns = ['open', 'high', 'low', 'close']
 df['returns'] = df['close'].pct_change()
 
 # Compute moving averages
