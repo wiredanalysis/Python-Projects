@@ -115,3 +115,41 @@ plt.xlabel("S&P 500 Returns")
 plt.ylabel("Apple Returns")
 plt.show()
 corr = apple_spy.corr()
+
+# Apple Monte Carlo Simulation
+
+import random
+
+# Define variables for Monte Carlo simulation
+n_simulations = 1000
+n_days = 365
+starting_price = apple_data['Close'][-1]
+
+# Calculate daily return mean and standard deviation
+daily_return_mean = daily_returns.mean()
+daily_return_std = daily_returns.std()
+
+# Run Monte Carlo simulation
+simulated_prices = []
+for i in range(n_simulations):
+    prices = [starting_price]
+    for j in range(n_days):
+        daily_return = random.gauss(daily_return_mean, daily_return_std)
+        price = prices[-1] * (1 + daily_return)
+        prices.append(price)
+    simulated_prices.append(prices)
+
+# Calculate mean and standard deviation of simulated prices
+simulated_prices = np.array(simulated_prices)
+mean_prices = simulated_prices.mean(axis=0)
+std_prices = simulated_prices.std(axis=0)
+
+# Plot simulated prices with confidence interval
+plt.figure(figsize=(16,8))
+plt.plot(mean_prices, label='Simulated Price')
+plt.fill_between(range(n_days+1), mean_prices - 2*std_prices, mean_prices + 2*std_prices, alpha=0.2, label='95% CI')
+plt.title("Apple Monte Carlo Simulation")
+plt.xlabel("Days")
+plt.ylabel("Stock Price ($)")
+plt.legend()
+plt.show()
